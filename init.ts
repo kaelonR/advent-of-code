@@ -14,7 +14,7 @@ interface Settings {
 	pristine: boolean;
 	rootPath: string;
 	seed: boolean;
-	suck: boolean;
+	pull: boolean;
 	templatePath: string;
 	compareWithPath?: string;
 	years: number[];
@@ -24,18 +24,18 @@ interface Settings {
 if (
 	process.argv.includes("-h") ||
 	process.argv.includes("--help") ||
-	(!process.argv.includes("suck") && !process.argv.includes("seed"))
+	(!process.argv.includes("pull") && !process.argv.includes("seed"))
 ) {
 	console.log(`Advent of Code initializer
 
 Initialize your Advent of Code workspace by
--- Automatically sucking in problem data
+-- Automatically pulling in problem data
 -- Seeding your solution files with a template
 
 Usage:
-node init.js [seed] [suck] [options]
+node init.js [seed] [pull] [options]
 seed             : Seed solution files using template.
-suck             : Suck in problem data from adventofcode.com.
+pull             : Pull in problem data from adventofcode.com.
 --year, -y       : Specify a year e.g., 2018. Defaults to current year.
                    Or specify "all" for all years (2015-current_year).
 --path, -p       : Specify root path for writing data. Must supply full,
@@ -50,7 +50,7 @@ suck             : Suck in problem data from adventofcode.com.
                    Defaults to {app_root}/compareTemplate.dat.
 --pristine       : Overwrite all solution files and data files. Cannot be
                    reversed. You have been warned.
---wait           : Before sucking any data, wait until the next problem is
+--wait           : Before pulling any data, wait until the next problem is
                    released, then proceed normally. If wait is more than
                    one day, show an error and do nothing.
 
@@ -59,7 +59,7 @@ suck             : Suck in problem data from adventofcode.com.
 }
 const settings: Settings = {
 	years: [],
-	suck: false,
+	pull: false,
 	seed: false,
 	rootPath: "",
 	templatePath: "",
@@ -135,12 +135,12 @@ function getReleaseTime(day: number, year: number) {
 	return new Date(inCurrentTZ.getTime() - inCurrentTZ.getTimezoneOffset() * 60 * 1000);
 }
 
-async function suckDay(day: number, year: number) {
+async function pullDay(day: number, year: number) {
 	const dataPath = getDataPath(day, year);
 	if (!existsSync(dataPath) || settings.pristine) {
 		const releaseTime = getReleaseTime(day, year);
 		if (new Date().getTime() >= releaseTime.getTime()) {
-			console.log(`Sucking in data for year: ${year}, day: ${day}.`);
+			console.log(`Pulling in data for year: ${year}, day: ${day}.`);
 			const data = await getDayData(day, year);
 			const dataDir = path.dirname(dataPath);
 			await mkdirp(dataDir);
@@ -186,7 +186,7 @@ function parseArgs() {
 		compareWithIndex >= 0 ? args[compareWithIndex + 1] : path.join(getAppRoot(), "compareTemplate.dat");
 
 	const sessionToken = sessionTokenIndex >= 0 ? args[sessionTokenIndex + 1] : undefined;
-	const suck = args.includes("suck");
+	const pull = args.includes("pull");
 	const seed = args.includes("seed");
 	const pristine = args.includes("--pristine");
 	const wait = args.includes("--wait");
@@ -200,7 +200,7 @@ function parseArgs() {
 
 	Object.assign(settings, {
 		years,
-		suck,
+		pull,
 		seed,
 		rootPath,
 		templatePath,
@@ -240,8 +240,7 @@ async function seed(year: number) {
 
 async function run() {
 	parseArgs();
-
-	if (settings.suck) {
+	if (settings.pull) {
 		if (settings.wait) {
 			const latestPuzzleAsOfTomorrow = getLatestPuzzleDate(new Date(Date.now() + 86400000));
 			const actualLatestPuzzle = getLatestPuzzleDate();
@@ -275,10 +274,10 @@ async function run() {
 		for (const year of settings.years) {
 			for (let i = 0; i < NUM_DAYS; ++i) {
 				const day = i + 1;
-				const isDone = await suckDay(day, year);
+				const isDone = await pullDay(day, year);
 				if (isDone) {
-					console.log(`Finished sucking year ${year} after day: ${day - 1}.`);
-					return;
+					console.log(`Finished pulling year ${year} after day: ${day - 1}.`);
+					break;
 				}
 
 				// Wait 100ms between requests, because idk.
