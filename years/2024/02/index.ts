@@ -13,15 +13,12 @@ const DAY = 2;
 // problem url  : https://adventofcode.com/2024/day/2
 async function p2024day2_part1(input: string, ...params: any[]) {
 	const reports = parseData(input);
-
-	let safeReportCount = 0
+	let safeReportCount = 0;
 
 	reports.forEach(report => {
 		const deltas = getDeltas(report);
 		const errorCount = countErrors(deltas);
-		if(errorCount == 0) {
-			safeReportCount++;
-		}
+		if (errorCount == 0) safeReportCount++;
 	});
 
 	return safeReportCount;
@@ -29,13 +26,13 @@ async function p2024day2_part1(input: string, ...params: any[]) {
 
 async function p2024day2_part2(input: string, ...params: any[]) {
 	const reports = parseData(input);
-	let safeReportCount = 0
+	let safeReportCount = 0;
 
 	reports.forEach(report => {
 		const deltas = getDeltas(report);
 		const errorCount = countErrors(deltas);
 
-		if(errorCount === 0 || isCaughtByErrorDampener(report)) {
+		if (errorCount === 0 || isCaughtByErrorDampener(report)) {
 			safeReportCount++;
 		}
 	});
@@ -44,15 +41,15 @@ async function p2024day2_part2(input: string, ...params: any[]) {
 }
 
 function parseData(input: string): Array<number[]> {
-	const lines = input.split('\n');
-	const data = lines.map(line => line.split(' ').map(n => Number.parseInt(n)));
+	const lines = input.split("\n");
+	const data = lines.map(line => line.split(" ").map(n => Number.parseInt(n)));
 	return data;
 }
 
 function getDeltas(report: number[]): number[] {
 	const deltas: number[] = [];
-	for(let i = 0; i < report.length - 1; i++) {
-		deltas.push(report[i+1] - report[i]);
+	for (let i = 0; i < report.length - 1; i++) {
+		deltas.push(report[i + 1] - report[i]);
 	}
 	return deltas;
 }
@@ -60,10 +57,10 @@ function getDeltas(report: number[]): number[] {
 function countErrors(deltas: number[]): number {
 	let errorCount = 0;
 
-	for(let i= 0; i < deltas.length; i++) {
-		if(deltas[i] < -3 || deltas[i] > 3 || deltas[i] === 0) errorCount++;
-		else if(i < deltas.length - 1 && deltas[i] > 0 && deltas[i+1] <= 0) errorCount++;
-		else if(i < deltas.length - 1 && deltas[i] < 0 && deltas[i+1] >= 0) errorCount++;
+	for (let i = 0; i < deltas.length; i++) {
+		if (deltas[i] < -3 || deltas[i] > 3 || deltas[i] === 0) errorCount++;
+		else if (i < deltas.length - 1 && deltas[i] > 0 && deltas[i + 1] <= 0) errorCount++;
+		else if (i < deltas.length - 1 && deltas[i] < 0 && deltas[i + 1] >= 0) errorCount++;
 	}
 
 	return errorCount;
@@ -75,7 +72,7 @@ function isCaughtByErrorDampener(report: number[]): boolean {
 		reportWithoutLevelAtIndex.splice(i, 1);
 
 		const errorCount = countErrors(getDeltas(reportWithoutLevelAtIndex));
-		if(errorCount === 0) return true;
+		if (errorCount === 0) return true;
 	}
 
 	return false;
@@ -84,15 +81,15 @@ function isCaughtByErrorDampener(report: number[]): boolean {
 async function run() {
 	const part1tests: TestCase[] = [
 		{
-			input: '7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9',
-			expected: '2'
-		}
+			input: "7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9",
+			expected: "2",
+		},
 	];
 	const part2tests: TestCase[] = [
 		{
-			input: '7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9',
-			expected: '4'
-		}
+			input: "7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9",
+			expected: "4",
+		},
 	];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
@@ -118,7 +115,7 @@ async function run() {
 	const part1Solution = String(await p2024day2_part1(input));
 	const part1After = performance.now();
 
-	const part2Before = performance.now()
+	const part2Before = performance.now();
 	const part2Solution = String(await p2024day2_part2(input));
 	const part2After = performance.now();
 
