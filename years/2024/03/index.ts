@@ -43,8 +43,14 @@ async function p2024day3_part2(input: string, ...params: any[]) {
 			}
 		}
 
-		else if(input[i] === 'd' && input.slice(i, i + 4) === 'do()') mulEnabled = true;
-		else if(input[i] === 'd' && input.slice(i, i + 7) === 'don\'t()') mulEnabled = false;
+		else if(input[i] === 'd' && input.slice(i, i + 4) === 'do()') {
+			mulEnabled = true;
+			i += 3;
+		}
+		else if(input[i] === 'd' && input.slice(i, i + 7) === 'don\'t()') {
+			mulEnabled = false;
+			i += 6;
+		}
 	}
 
 	return result;
