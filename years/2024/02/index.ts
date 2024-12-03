@@ -32,7 +32,7 @@ async function p2024day2_part2(input: string, ...params: any[]) {
     const deltas = getDeltas(report);
     const errorCount = countErrors(deltas);
 
-    if (errorCount === 0 || isCaughtByErrorDampener(report)) {
+    if (errorCount === 0 || isCaughtByErrorDampener(deltas)) {
       safeReportCount++;
     }
   });
@@ -66,12 +66,15 @@ function countErrors(deltas: number[]): number {
   return errorCount;
 }
 
-function isCaughtByErrorDampener(report: number[]): boolean {
-  for (let i = 0; i < report.length; i++) {
-    const reportWithoutLevelAtIndex = [...report];
-    reportWithoutLevelAtIndex.splice(i, 1);
+function isCaughtByErrorDampener(deltas: number[]): boolean {
+  for (let i = 0; i < deltas.length; i++) {
+    const deltasWithoutLevelAtIndex = [...deltas];
+    if(i < deltas.length - 1) {
+      deltasWithoutLevelAtIndex[i+1] = deltasWithoutLevelAtIndex[i] + deltasWithoutLevelAtIndex[i+1];
+    }
+    deltasWithoutLevelAtIndex.splice(i, 1);
 
-    const errorCount = countErrors(getDeltas(reportWithoutLevelAtIndex));
+    const errorCount = countErrors(deltasWithoutLevelAtIndex);
     if (errorCount === 0) return true;
   }
 
