@@ -1,10 +1,10 @@
-import _ from "lodash";
 import * as util from "../../../util/util";
 import * as test from "../../../util/test";
 import chalk from "chalk";
 import { log, logSolution, trace } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
+import { Grid, Cell, directions, Direction, Dir } from '../../../util/grid';
 
 const YEAR = 2024;
 const DAY = 4;
@@ -12,18 +12,68 @@ const DAY = 4;
 // solution path: C:\projects\advent-of-code\years\2024\04\index.ts
 // data path    : C:\projects\advent-of-code\years\2024\04\data.txt
 // problem url  : https://adventofcode.com/2024/day/4
-
 async function p2024day4_part1(input: string, ...params: any[]) {
-	return "Not implemented";
+	let count = 0;
+
+	const grid = new Grid({ serialized: input })
+	const xCells = grid.getCells('X');
+
+	for(const xCell of xCells) {
+		for(const dir of directions) {
+			if(cellStartsWord(xCell, 'xmas', dir)) count++;
+		}
+	}
+
+	return count;
 }
 
 async function p2024day4_part2(input: string, ...params: any[]) {
-	return "Not implemented";
+	let count = 0;
+
+	const grid = new Grid({ serialized: input })
+	const aCells = grid.getCells('A');
+	const cellsToCheck = aCells.map((aCell) => [
+		{ cell: aCell.move('northwest', 1), direction: 'southeast'},
+		{ cell: aCell.move('northeast', 1), direction: 'southwest'},
+		{ cell: aCell.move('southwest', 1), direction: 'northeast'},
+		{ cell: aCell.move('southeast', 1), direction: 'northwest'}
+	]).map(group => group.filter(entry => !!entry.cell)) as { cell: Cell, direction: Direction }[][];
+
+	for(const group of cellsToCheck) {
+		let groupCount = 0;
+		for(const entry of group) {
+			if(cellStartsWord(entry.cell, 'mas', entry.direction)) groupCount++;
+			if(groupCount > 1) break;
+		}
+
+		if(groupCount > 1) count++;
+	}
+
+	return count;
+}
+
+function cellStartsWord(cell: Cell, word: string, direction: Direction): boolean {
+	const wordToCheck = word.toLowerCase();
+	if(!cell.canMoveInDirection(direction, word.length - 1)) return false;
+
+	for(let i = 0; i < word.length; i++) {
+		if(cell.move(direction, i)!.value.toLowerCase() !== wordToCheck[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 async function run() {
-	const part1tests: TestCase[] = [];
-	const part2tests: TestCase[] = [];
+	const part1tests: TestCase[] = [{
+		input: 'MMMSXXMASM\nMSAMXMSMSA\nAMXSXMAAMM\nMSAMASMSMX\nXMASAMXAMM\nXXAMMXXAMA\nSMSMSASXSS\nSAXAMASAAA\nMAMMMXMMMM\nMXMXAXMASX',
+		expected: '18'
+	}];
+	const part2tests: TestCase[] = [{
+		input: 'MMMSXXMASM\nMSAMXMSMSA\nAMXSXMAAMM\nMSAMASMSMX\nXMASAMXAMM\nXXAMMXXAMA\nSMSMSASXSS\nSAXAMASAAA\nMAMMMXMMMM\nMXMXAXMASX',
+		expected: '9'
+	}];
 
 	const [p1testsNormalized, p2testsNormalized] = normalizeTestCases(part1tests, part2tests);
 

@@ -5,6 +5,17 @@ import chalk from "chalk";
 export type CardinalDirection = "north" | "south" | "east" | "west";
 export type OrdinalDirection = "northwest" | "southwest" | "northeast" | "southeast";
 export type Direction = CardinalDirection | OrdinalDirection;
+const allDirections: Record<Direction, Direction> = {
+	north: 'north',
+	south: 'south',
+	east: 'east',
+	west: 'west',
+	northwest: 'northwest',
+	northeast: 'northeast',
+	southeast: 'southeast',
+	southwest: 'southwest'
+}
+export const directions = Object.keys(allDirections) as Direction[]
 
 /**
  * Options for initializing a Grid
@@ -289,23 +300,15 @@ const COLOR_ORDER = [
 /**
  * List of common directions
  */
-export const Dir: Obj<GridPos> = {
-	N: [-1, 0],
-	U: [-1, 0],
-
-	E: [0, 1],
-	R: [0, 1],
-
-	S: [1, 0],
-	D: [1, 0],
-
-	W: [0, -1],
-	L: [0, -1],
-
-	NE: [-1, 1],
-	SE: [1, 1],
-	SW: [1, -1],
-	NW: [-1, -1],
+export const Dir: Record<Direction, GridPos> = {
+	north: [-1, 0],
+	east: [0, 1],
+	south: [1, 0],
+	west: [0, -1],
+	northeast: [-1, 1],
+	southeast: [1, 1],
+	southwest: [1, -1],
+	northwest: [-1, -1],
 };
 
 /**
@@ -993,57 +996,15 @@ export class Cell {
 		return this.pos[0] * this._grid.colCount + this.pos[1];
 	}
 
-	// @todo fix the api for function sbelow
-	/**
-	 * Return the cell found `count` cells above of this cell.
-	 * @param count Number of cells to move
-	 * @param moveOption How to handle hitting the edge. @See MoveOption.
-	 */
-	public north(
-		count: number | ((cell: Cell | undefined, origin: Cell) => boolean) = 1,
-		moveOption: MoveOption = "none",
-		options: Omit<RepeatMovementsOptions, "count" | "moveOption"> = {}
-	) {
-		return this.repeatMovements([Dir.N], { count, moveOption, ...options });
+	public canMoveInDirection(direction: Direction, count: number = 1) {
+		const directionalTransform = Dir[direction];
+		const [newRow, newCol] = [this.pos[0] + directionalTransform[0] * count, this.pos[1] + directionalTransform[1] * count];
+		return newRow >= 0 && newRow < this.grid.rowCount && newCol >= 0 && newCol < this.grid.colCount;
 	}
 
-	/**
-	 * Return the cell found `count` cells right of this cell.
-	 * @param count Number of cells to move
-	 * @param moveOption How to handle hitting the edge. @See MoveOption.
-	 */
-	public east(
-		count: number | ((cell: Cell | undefined, origin: Cell) => boolean) = 1,
-		moveOption: MoveOption = "none",
-		options: Omit<RepeatMovementsOptions, "count" | "moveOption"> = {}
-	) {
-		return this.repeatMovements([Dir.E], { count, moveOption, ...options });
-	}
-
-	/**
-	 * Return the cell found `count` cells below of this cell.
-	 * @param count Number of cells to move
-	 * @param moveOption How to handle hitting the edge. @See MoveOption.
-	 */
-	public south(
-		count: number | ((cell: Cell | undefined, origin: Cell) => boolean) = 1,
-		moveOption: MoveOption = "none",
-		options: Omit<RepeatMovementsOptions, "count" | "moveOption"> = {}
-	) {
-		return this.repeatMovements([Dir.S], { count, moveOption, ...options });
-	}
-
-	/**
-	 * Return the cell found `count` cells left of this cell.
-	 * @param count Number of cells to move
-	 * @param moveOption How to handle hitting the edge. @See MoveOption.
-	 */
-	public west(
-		count: number | ((cell: Cell | undefined, origin: Cell) => boolean) = 1,
-		moveOption: MoveOption = "none",
-		options: Omit<RepeatMovementsOptions, "count" | "moveOption"> = {}
-	) {
-		return this.repeatMovements([Dir.W], { count, moveOption, ...options });
+	/** move across the grid to get another cell. */
+	public move(direction: Direction, count: number, options: Omit<RepeatMovementsOptions, 'count'> = {}) {
+		return this.repeatMovements([Dir[direction]], { count, ...options });
 	}
 
 	/**
@@ -1053,6 +1014,8 @@ export class Cell {
 	 */
 	public repeatMovements(movements: [dRow: number, dCol: number][], options: RepeatMovementsOptions = {}) {
 		const { count = 1, moveOption = "none", forceOneMove = true, updateTracking = false, transferData } = options;
+		if (count === 0) return this;
+
 		let nextPos = [...this.pos] as GridPos;
 		for (
 			let i = 0;
@@ -1141,41 +1104,41 @@ export class Cell {
 
 		for (let i = 0; i < distance; ++i) {
 			if (includeVertical) {
-				const northCell = this.north(i + 1) as Cell;
+				const northCell = this.move('north', i + 1)
 				if (northCell) {
 					neighbors.set(northCell.toString(), northCell);
 				}
-				const southCell = this.south(i + 1) as Cell;
+				const southCell = this.move('south', i + 1)
 				if (southCell) {
 					neighbors.set(southCell.toString(), southCell);
 				}
 			}
 
 			if (includeHorizontal) {
-				const westCell = this.west(i + 1) as Cell;
+				const westCell = this.move('west', i + 1)
 				if (westCell) {
 					neighbors.set(westCell.toString(), westCell);
 				}
-				const eastCell = this.east(i + 1) as Cell;
+				const eastCell = this.move('east', i + 1)
 				if (eastCell) {
 					neighbors.set(eastCell.toString(), eastCell);
 				}
 			}
 
 			if (includeDiagonal) {
-				const northwestCell = this.north(i + 1)?.west(i + 1) as Cell;
+				const northwestCell = this.move('northwest', i + 1)
 				if (northwestCell) {
 					neighbors.set(northwestCell.toString(), northwestCell);
 				}
-				const northeastCell = this.north(i + 1)?.east(i + 1) as Cell;
+				const northeastCell = this.move('northeast', i + 1);
 				if (northeastCell) {
 					neighbors.set(northeastCell.toString(), northeastCell);
 				}
-				const southwestCell = this.south(i + 1)?.west(i + 1) as Cell;
+				const southwestCell = this.move('southwest', i + 1)
 				if (southwestCell) {
 					neighbors.set(southwestCell.toString(), southwestCell);
 				}
-				const southeastCell = this.south(i + 1)?.east(i + 1) as Cell;
+				const southeastCell = this.move('southeast', i + 1)
 				if (southeastCell) {
 					neighbors.set(southeastCell.toString(), southeastCell);
 				}
@@ -1196,28 +1159,28 @@ export class Cell {
 	 * Returns true if this cell is on the top row of the grid.
 	 */
 	public isNorthEdge() {
-		return this.north() == undefined;
+		return this.pos[0] === 0;
 	}
 
 	/**
 	 * Returns true if this cell is on the rightmost column of the grid.
 	 */
 	public isEastEdge() {
-		return this.east() == undefined;
+		return this.pos[1] === this.grid.colCount;
 	}
 
 	/**
 	 * Returns true if this cell is last row of the grid.
 	 */
 	public isSouthEdge() {
-		return this.south() == undefined;
+		return this.pos[0] === this.grid.rowCount;
 	}
 
 	/**
 	 * Returns true if this cell is on the leftmost column of the grid.
 	 */
 	public isWestEdge() {
-		return this.west() == undefined;
+		return this.pos[1] === 0;
 	}
 
 	/**
