@@ -13,48 +13,48 @@ let day: number = 0;
 
 const args = process.argv.slice(2);
 for (const arg of args) {
-	if (arg.trim() === "--debug" || arg.trim() === "-d") {
-		debug = true;
-	} else if (arg.trim() === "--help" || arg.trim() === "-h") {
-		help = true;
-	} else if (arg.trim() === "--no-test" || arg.trim() === "--no-tests" || arg.trim() === "-n") {
-		noTests = true;
-	} else {
-		const num = Number(arg);
-		if (Number.isInteger(num)) {
-			if (num >= 1 && num <= 25) {
-				day = num;
-			} else if (num >= 2015 && num < 2100) {
-				year = num;
-			} else {
-				usage();
-			}
-		} else {
-			usage();
-		}
-	}
+  if (arg.trim() === "--debug" || arg.trim() === "-d") {
+    debug = true;
+  } else if (arg.trim() === "--help" || arg.trim() === "-h") {
+    help = true;
+  } else if (arg.trim() === "--no-test" || arg.trim() === "--no-tests" || arg.trim() === "-n") {
+    noTests = true;
+  } else {
+    const num = Number(arg);
+    if (Number.isInteger(num)) {
+      if (num >= 1 && num <= 25) {
+        day = num;
+      } else if (num >= 2015 && num < 2100) {
+        year = num;
+      } else {
+        usage();
+      }
+    } else {
+      usage();
+    }
+  }
 }
 
 if ((year === 0 && day !== 0) || (year !== 0 && day === 0)) {
-	usage();
+  usage();
 }
 
 if (help) {
-	usage();
+  usage();
 }
 
 LOGUTIL.setDebug(debug);
 TESTUTIL.setNoTests(noTests);
 
 if (year === 0 && day === 0) {
-	({ year, day } = util.getLatestPuzzleDate());
+  ({ year, day } = util.getLatestPuzzleDate());
 }
 const puzzleFile = path.join(util.getDayRoot(day, year), "index");
 log(chalk`\n== Running puzzle {cyan ${year}.${day}}${debug ? " [Debug ON]" : ""} ==\n`);
 require(puzzleFile);
 
 function usage() {
-	log(`
+  log(`
 	Runs your solution for the problem for the given <year, day>. If
 	executed without arguments, it will attempt to run the most
 	recently-released Advent of Code puzzle.
@@ -75,5 +75,5 @@ function usage() {
 	  ts-node run.ts
 	  ts-node run.ts 2018 22
 	`);
-	process.exit(0);
+  process.exit(0);
 }
