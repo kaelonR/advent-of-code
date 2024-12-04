@@ -1,10 +1,10 @@
 import * as util from "../../../util/util";
 import * as test from "../../../util/test";
 import chalk from "chalk";
-import { log, logSolution, trace } from "../../../util/log";
+import { log, logSolution } from "../../../util/log";
 import { performance } from "perf_hooks";
 import { normalizeTestCases } from "../../../util/test";
-import { Grid, Cell, directions, Direction, Dir } from '../../../util/grid';
+import { Grid, Cell, directions, Direction } from '../../../util/grid';
 
 const YEAR = 2024;
 const DAY = 4;
