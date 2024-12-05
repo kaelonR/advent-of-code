@@ -46,7 +46,7 @@ function parseInput(input: string): { orderingRules: Array<[number, number]>, up
     }
   }
 
-  return {orderingRules, updateRecords }
+  return { orderingRules, updateRecords }
 }
 
 type RelativePageOrdering = { comesBefore: Set<number>, comesAfter: Set<number> }
@@ -65,7 +65,7 @@ function groupOrderingRulesByPageNumber(orderingRules: Array<[number, number]>) 
 }
 
 function updateIsValid(orderingRulesByPage: Record<number, RelativePageOrdering>, updateRecord: number[]): boolean {
-  const pagesByIndex = updateRecord.reduce(
+  const pageIndices = updateRecord.reduce(
     (acc, page, i) => { acc[page] = i; return acc;},
     {} as Record<number, number>);
 
@@ -74,10 +74,10 @@ function updateIsValid(orderingRulesByPage: Record<number, RelativePageOrdering>
     const orderingRules = orderingRulesByPage[page];
 
     for(const pageThatMustComeBefore of orderingRules.comesBefore) {
-      if(pagesByIndex[pageThatMustComeBefore] > i) return false;
+      if(pageIndices[pageThatMustComeBefore] > i) return false;
     }
     for(const pageThatMustComeAfter of orderingRules.comesAfter) {
-      if(pagesByIndex[pageThatMustComeAfter] < i) return false;
+      if(pageIndices[pageThatMustComeAfter] < i) return false;
     }
   }
 
@@ -88,12 +88,7 @@ function reorderUpdateRecord(orderingRulesByPage: Record<number, RelativePageOrd
   updateRecord.sort((a, b) => {
     if (!orderingRulesByPage[a]) return 0;
 
-    const numbersBeforeA = orderingRulesByPage[a].comesBefore;
-    const numbersAfterA = orderingRulesByPage[a].comesAfter;
-
-    if(numbersBeforeA.has(b)) return -1
-    if(numbersAfterA.has(b)) return 1;
-    return 0;
+    return orderingRulesByPage[a].comesBefore.has(b) ? -1 : 1;
   })
 
   return updateRecord;
